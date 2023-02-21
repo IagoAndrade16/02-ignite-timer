@@ -19,7 +19,7 @@ export const ButtonContainer = styled.button<IButtonContainerProps>`
   border: 0;
   margin: 0.5rem;
 
-  background-color: ${props => props.theme.primary};
+  background-color: ${props => props.theme["green-500"]};
 
   /* ${props => {
     return css`

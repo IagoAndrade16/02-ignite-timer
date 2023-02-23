@@ -10,10 +10,29 @@ import {
   TaskInput,
 } from './styles'
 
-export function Home() {
-  const { register, handleSubmit, watch } = useForm()
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as zod from 'zod'
 
-  function handleCreateNewCicle(data: any) {
+const newCicleFormValidationSchema = zod.object({
+  task: zod.string().min(1, 'Informe a tarefa'),
+  minutesAmount: zod
+    .number()
+    .min(5, 'O cicle deve ser no mínimo de 5 minutos')
+    .max(60, 'O ciclo deve ser no máximo de 60 minutos'),
+})
+
+type NewCicleFormData = zod.infer<typeof newCicleFormValidationSchema>
+
+export function Home() {
+  const { register, handleSubmit, watch } = useForm<NewCicleFormData>({
+    resolver: zodResolver(newCicleFormValidationSchema),
+    defaultValues: {
+      task: '',
+      minutesAmount: 0,
+    },
+  })
+
+  function handleCreateNewCicle(data: NewCicleFormData) {
     console.log(data)
   }
 
@@ -46,8 +65,6 @@ export function Home() {
             id="minutesAmount"
             placeholder="00"
             step={5}
-            min={5}
-            max={60}
             {...register('minutesAmount', { valueAsNumber: true })}
           />
 

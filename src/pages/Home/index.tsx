@@ -9,10 +9,11 @@ import {
   StartCountdownButton,
   TaskInput,
 } from './styles'
+import { differenceInSeconds } from 'date-fns'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as zod from 'zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const newCicleFormValidationSchema = zod.object({
   task: zod.string().min(1, 'Informe a tarefa'),
@@ -28,6 +29,7 @@ interface ICycle {
   id: string
   task: string
   minutesAmount: number
+  startDate: Date
 }
 
 export function Home() {
@@ -43,20 +45,37 @@ export function Home() {
     },
   })
 
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  useEffect(() => {
+    let interval: number
+    if (activeCycle) {
+      interval = setInterval(() => {
+        setAmountSecondsPassed(
+          differenceInSeconds(new Date(), activeCycle.startDate),
+        )
+      }, 1000)
+    }
+
+    return () => {
+      clearInterval(interval)
+    }
+  }, [activeCycle])
+
   function handleCreateNewCicle(data: NewCicleFormData) {
     const newCycle: ICycle = {
       id: String(new Date().getTime()),
       task: data.task,
       minutesAmount: data.minutesAmount,
+      startDate: new Date(),
     }
 
     setCycles((state) => [...state, newCycle])
     setActiveCycleId(newCycle.id)
+    setAmountSecondsPassed(0)
 
     reset()
   }
-
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
@@ -107,7 +126,7 @@ export function Home() {
           <span>{minutes[1]}</span>
           <Separator>:</Separator>
           <span>{seconds[0]}</span>
-          <span>{minutes[1]}</span>
+          <span>{seconds[1]}</span>
         </CountDownContainer>
 
         <StartCountdownButton disabled={isSubmitDisabled} type="submit">
